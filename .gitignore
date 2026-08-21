@@ -1,0 +1,14 @@
+node_modules/
+.pnpm-store/
+.next/
+coverage/
+*.log
+*.tsbuildinfo
+.env*
+!.env.example
+/artifacts/audio/
+/artifacts/video/
+/artifacts/submission/*
+!/artifacts/submission/neverlost-case-navigator-build-for-good.mp4
+!/artifacts/submission/neverlost-case-navigator-build-for-good.srt
+!/artifacts/submission/neverlost-case-navigator-thumbnail.png
