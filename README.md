@@ -112,8 +112,6 @@ pnpm demo:video
 
 The command writes the completed silent walkthrough to `artifacts/video/neverlost-case-navigator-demo.webm`. For a reproducible judge recording, the Playwright harness replays the already live-tested S02 result instead of making another cost-bearing request.
 
-- Final narrated demo: [MP4](artifacts/submission/neverlost-case-navigator-build-for-good.mp4)
-- Captions: [SRT](artifacts/submission/neverlost-case-navigator-build-for-good.srt)
 - Thumbnail: [PNG](artifacts/submission/neverlost-case-navigator-thumbnail.png)
 - YouTube demo URL: https://youtu.be/LqU7pvqd4n4
 
