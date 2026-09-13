@@ -17,6 +17,8 @@ Use the Figma component as the visual source of truth for:
 - category/stage, version, description, capability tags, CTA and optional screenshot presentation
 - responsive presentation of Neverlost projects
 
+**Temporary logo source:** Until the Figma Project Card includes the Neverlost logo, use [`public/brand/nvlt-youtube-logo.png`](public/brand/nvlt-youtube-logo.png) as the repo-hosted logo asset for Case Navigator's portfolio/project-card presentation. This is an implementation bridge, not a separate brand definition. Once the logo is added to the Figma component, Figma becomes authoritative for its placement, scale and card treatment unless a later brand update explicitly replaces the asset.
+
 **Boundary:** The Project Card governs how Case Navigator is represented within the Neverlost portfolio and shared design system. It does not automatically redefine the Case Navigator application UI, workflow behavior, governance model, fixtures, safety boundaries or product architecture. Changes to the application itself must be separately scoped, reviewed and verified.
 
 ## What we built
