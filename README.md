@@ -4,6 +4,21 @@ Neverlost Case Navigator is a synthetic healthcare-consulting demonstration that
 
 **AI proposes. Human decides.**
 
+## Design source of truth
+
+The portfolio and project-presentation layer for Case Navigator should follow the reusable **Neverlost / Project Card** component in Figma:
+
+**Figma:** https://www.figma.com/design/l3pCo2LayBqwdT54OePGxA/Neverlost-Design-System?node-id=5-74
+
+Use the Figma component as the visual source of truth for:
+
+- project-card layout and hierarchy
+- typography, spacing, corner radius, borders and color treatment
+- category/stage, version, description, capability tags, CTA and optional screenshot presentation
+- responsive presentation of Neverlost projects
+
+**Boundary:** The Project Card governs how Case Navigator is represented within the Neverlost portfolio and shared design system. It does not automatically redefine the Case Navigator application UI, workflow behavior, governance model, fixtures, safety boundaries or product architecture. Changes to the application itself must be separately scoped, reviewed and verified.
+
 ## What we built
 
 Case Navigator demonstrates a governed case-to-packet workflow for a fully synthetic client, Maya Bennett. It preserves six fragmented source records, uses OpenAI to surface evidence-grounded proposal candidates, keeps every candidate unreviewed until a consultant acts, and projects only reviewed accepted state into the timeline and deterministic packet previews.
