@@ -17,6 +17,16 @@ const RequestSchema = z
   .strict();
 
 export async function POST(request: Request) {
+  if (process.env.ENABLE_LIVE_AI !== "true") {
+    return NextResponse.json(
+      {
+        error:
+          "Live AI generation is disabled in this public demonstration. It can be enabled for guided demonstrations.",
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const input = RequestSchema.parse(await request.json());
     const result = await orchestrateProposalGeneration(
