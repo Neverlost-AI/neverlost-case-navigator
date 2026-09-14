@@ -93,7 +93,7 @@ The OpenAI request is server-only, uses `store: false`, supplies no tools, allow
 
 ## Run locally
 
-Requirements: Node.js compatible with Next.js 15 and pnpm 11.9.0.
+Requirements: Node.js compatible with Next.js 15 and pnpm 10.34.5.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -105,10 +105,25 @@ Open `http://127.0.0.1:3000`.
 The deterministic/reference workflow works without an API key. To enable optional live OpenAI proposal generation, copy `.env.example` to the local ignored `.env.local` file and set:
 
 ```text
+ENABLE_LIVE_AI=true
 OPENAI_API_KEY=your_project_key
 ```
 
 Never commit `.env.local`, never expose the key through a `NEXT_PUBLIC_` variable, and never use real patient data.
+
+## Vercel / public deployment
+
+The public portfolio deployment is intended to default to deterministic/reference mode:
+
+```text
+ENABLE_LIVE_AI=false
+```
+
+With live AI disabled, the OpenAI analysis control is hidden and `/api/ai/proposals` refuses live generation before an OpenAI client is created. The deterministic case review, accepted-state workflow, timeline, packet previews, and provenance remain available without an API key.
+
+For a separately authorized guided demonstration, set `ENABLE_LIVE_AI=true`, configure `OPENAI_API_KEY` as a server-side Vercel environment variable, and redeploy. Do not expose the key through a `NEXT_PUBLIC_` variable.
+
+No `vercel.json` is required for the current standard Next.js deployment.
 
 ## Verification
 
@@ -148,7 +163,7 @@ Codex supported implementation, boundary-focused tests, deterministic browser re
 - The live OpenAI path supports the six included synthetic fixtures and one source per run.
 - The deterministic/reference proposal set remains the reproducible no-key mode.
 - Experimental AI packet drafting is disabled; packet previews are deterministic projections from accepted state.
-- Authentication, real records, production security, HIPAA controls, deployment, official forms, and professional determinations are outside scope.
+- Authentication, real records, production security, HIPAA controls, official forms, production use, and professional determinations are outside scope.
 
 ## Future development
 
