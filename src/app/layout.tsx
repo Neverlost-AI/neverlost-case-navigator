@@ -9,9 +9,20 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
+  const liveAiEnabled = process.env.ENABLE_LIVE_AI === "true";
+
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={liveAiEnabled ? undefined : "live-ai-disabled"}>
+        {!liveAiEnabled ? (
+          <style>{`
+            .live-ai-disabled [aria-label="Optional OpenAI source analysis"] {
+              display: none;
+            }
+          `}</style>
+        ) : null}
+        {children}
+      </body>
     </html>
   );
 }
