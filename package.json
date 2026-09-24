@@ -12,6 +12,7 @@
     "test": "vitest run --configLoader runner"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "next": "15.5.9",
     "openai": "7.4.0",
     "react": "19.1.8",
