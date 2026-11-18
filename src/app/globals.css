@@ -519,3 +519,48 @@ dd { margin: 0; font-size: .82rem; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+@font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat-600.ttf') format('truetype'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'Montserrat'; src: url('/fonts/Montserrat-700.ttf') format('truetype'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'Source Sans 3'; src: url('/fonts/SourceSans3-400.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'Source Sans 3'; src: url('/fonts/SourceSans3-600.ttf') format('truetype'); font-weight: 600; font-display: swap; }
+
+/* Public-demo presentation: domain decisions and source records remain unchanged. */
+:root { --ink: #000; --muted: #242424; --canvas: #f5f7f9; --blue-50: #eef6fb; --blue-100: #e5f2fa; font-family: 'Source Sans 3', system-ui, sans-serif; }
+body { font-size: 18px; }
+h1, h2, h3, h4, .wordmark-label { font-family: 'Montserrat', system-ui, sans-serif; font-weight: 600; }
+.hero { min-height: 0; color: #000; background: #f5f7f9; }
+.topbar { border-bottom: 1px solid var(--line); }
+.wordmark, .topbar-links a, .hero h1, .hero-lede, .hero .eyebrow, .boundary-note, .record-stack-heading, .record-stack-heading strong { color: #000; }
+.wordmark-logo { height: 42px; width: auto; }
+.hero-grid { min-height: 0; padding-block: 3rem; gap: 3rem; }
+.hero h1 { font-size: clamp(2rem, 3.7vw, 3.2rem); line-height: 1.12; letter-spacing: -.035em; }
+.record-slip { color: #000; background: #fff; border: 1px solid var(--line); box-shadow: none; }
+.record-slip span, .record-slip p { color: #000; }
+.human-gate { background: #e5f2fa; color: #000; border: 1px solid var(--line); }
+.human-gate p, .human-gate strong { color: #000; }
+.hero .button-primary, .button-primary { background: #102844; border-color: #102844; color: #fff; }
+.hero .button-primary:hover, .button-primary:hover { background: #1b3e60; color: #fff; }
+.metric-emphasis, .demo-path, .review-section, .output-section, .provenance-section { background: #eaf3f9; color: #000; }
+.metric-emphasis span, .metric-emphasis strong, .metric-emphasis small, .provenance-section h2, .provenance-section p, .provenance-section .eyebrow { color: #000; }
+.trace-node { background: #fff; border-color: var(--line); color: #000; }
+.trace-node span, .trace-node h3, .trace-node p, .trace-node small, .trace-node q, .trace-node li, .trace-select, .provenance-section .empty-state p { color: #000; }
+.trace-select select { color: #000; background: #fff; border-color: var(--line); }
+.decision-help, .draft-status { padding: 1rem; background: #eef6fb; border-radius: 8px; font-size: 1rem; line-height: 1.5; }
+.button, .text-button { min-height: 44px; }
+.site-footer { background: #f5f7f9; color: #000; text-align: left; }
+.site-footer strong { color: #000; }
+.site-footer p { max-width: none; font-size: .9rem; }
+.public-links { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-block: 1.3rem; }
+.public-links a { display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 4px; }
+.provenance-section .trace-select select { max-width: 100%; }
+.review-section .eyebrow, .review-section .section-heading p, .demo-path button, .demo-path button span, .demo-step-done button { color:#000; }
+.demo-path button { background:#fff; border-color:var(--line); font-size:.9rem; }
+.demo-path button span { background:#e5f2fa; }
+.demo-step-done button { background:#e8f7f1; }
+.proposal-workbench { box-shadow:var(--shadow-soft); border-color:var(--line); }
+.proposal-index { background:#e5f2fa; }
+.proposal-index button { color:#000; border-bottom-color:var(--line); min-height:48px; }
+.proposal-index button strong { font-size:.85rem; }
+.proposal-index button:hover, .proposal-index .proposal-index-selected { color:#000 !important; background:#cfe6f5 !important; }
+@media(max-width:700px) { .topbar { flex-wrap: wrap; padding-block: 1rem; gap: .7rem; } .topbar-links { display:flex; flex-wrap:wrap; gap:1rem; font-size:.9rem; } .hero-grid { gap:2rem; padding-block:2rem; } .hero h1 {font-size:2.1rem;} }

@@ -50,7 +50,7 @@ const DemoContext = createContext<DemoContextValue | null>(null);
 function errorMessage(error: unknown): string {
   return error instanceof Error
     ? error.message
-    : "The synthetic case could not be updated. Please try again.";
+    : "The example could not be updated. Please try again.";
 }
 
 async function responseJson<T>(response: Response): Promise<T> {
@@ -83,7 +83,7 @@ export function ClientDemoProvider({ children }: Readonly<{ children: ReactNode 
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState(
-    "Maya’s deterministic synthetic case is ready for review.",
+    "Maya’s example is ready to explore.",
   );
   const [resetVersion, setResetVersion] = useState(0);
 
@@ -123,7 +123,7 @@ export function ClientDemoProvider({ children }: Readonly<{ children: ReactNode 
         }
         refreshAcceptedCase();
         setAnnouncement(
-          `Proposal ${proposalId} was ${input.decision}. Accepted case state is updated.`,
+          `Suggestion ${proposalId}: ${{ accept: "included", edit: "included with clarification", reject: "left out", hold: "set aside" }[input.decision]}.`,
         );
       } catch (caught) {
         setError(errorMessage(caught));
@@ -180,7 +180,7 @@ export function ClientDemoProvider({ children }: Readonly<{ children: ReactNode 
       generateBothOutputs();
       setCaseSummary(service.getCase());
       setAnnouncement(
-        "Both synthetic packet previews were generated from accepted case state.",
+        "Both sample drafts were created from the information you included.",
       );
     } catch (caught) {
       setError(errorMessage(caught));
@@ -204,7 +204,7 @@ export function ClientDemoProvider({ children }: Readonly<{ children: ReactNode 
       proposalRunSequencerRef.current.reset();
       setResetVersion((version) => version + 1);
       setAnnouncement(
-        "Demo reset complete. All proposals are unreviewed and accepted case state is empty.",
+        "The example has restarted. Your choices and drafts have been cleared.",
       );
     } catch (caught) {
       setError(errorMessage(caught));

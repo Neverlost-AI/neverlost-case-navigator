@@ -20,7 +20,7 @@ function renderDemo() {
 
 function proposalButton(proposalId: string) {
   return screen.getByRole("button", {
-    name: new RegExp(`${proposalId} (?:Unreviewed|Accepted|Rejected|Held)`),
+    name: new RegExp(`${proposalId} (?:Unreviewed|Included|Left out|Set aside)`),
   });
 }
 
@@ -99,18 +99,19 @@ describe("Tranche 2 case navigator journey", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "Maya has one life, but her story is scattered across six records.",
+        name: "Prepare a clearer picture for your next conversation.",
       }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Neverlost turns fragmented records into one human-reviewed case foundation/),
+      screen.getByText(/Case Navigator explores how to bring relevant information together/),
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Maya Bennett" })).toBeInTheDocument();
-    expect(screen.getByText(/NL-BFG-001/)).toBeInTheDocument();
-    expect(screen.getAllByText(/Synthetic demonstration only/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/No official SSA form/)).toBeInTheDocument();
+    
+    expect(screen.getByText("This demonstration uses fictional information. Nothing is sent to a provider.")).toBeInTheDocument();
+    expect(screen.getByText("Demonstration with fictional information. Not medical, legal, or benefits advice.")).toBeInTheDocument();
+    expect(screen.queryByText(/No official SSA form/)).not.toBeInTheDocument();
 
-    const openCase = screen.getByRole("button", { name: /Open Maya’s case/ });
+    const openCase = screen.getByRole("button", { name: /Explore Maya’s example/ });
     expect(openCase.tagName).toBe("BUTTON");
     openCase.focus();
     expect(openCase).toHaveFocus();
@@ -143,7 +144,7 @@ describe("Tranche 2 case navigator journey", () => {
     const detail = screen.getByRole("article", {
       name: "Cardiology and Orthostatic Evaluation",
     });
-    expect(within(detail).getByText("Synthetic cardiology record")).toBeInTheDocument();
+    expect(within(detail).getByText("Cardiology record")).toBeInTheDocument();
     expect(
       within(detail).getByText(
         "Comprehensive autonomic testing has not yet been completed.",
@@ -191,30 +192,30 @@ describe("Tranche 2 case navigator journey", () => {
       idempotencyKey: "proposal-run-0001:S02",
     });
     expect(screen.getByText(/AI-generated for human review/)).toBeInTheDocument();
-    const revisionMetric = screen.getByText("State revision").closest("article");
-    expect(within(revisionMetric!).getByText("0")).toBeInTheDocument();
+    const revisionMetric = screen.getByText("Still to review").closest("article");
+    expect(within(revisionMetric!).getByText("9")).toBeInTheDocument();
   });
 
   it("accepts supported POTS evidence and adds only the accepted event to the timeline", async () => {
     renderDemo();
 
-    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
+    fireEvent.click(screen.getByRole("button", { name: "Include" }));
 
     expect(
       await screen.findByRole("heading", {
         name: "Cardiology evaluation documented findings consistent with POTS.",
       }),
     ).toBeInTheDocument();
-    const acceptedMetric = screen.getByText("Accepted statements").closest("article");
+    const acceptedMetric = screen.getByText("Included statements").closest("article");
     expect(acceptedMetric).not.toBeNull();
     expect(within(acceptedMetric!).getByText("1")).toBeInTheDocument();
     expect(screen.getByText("Proposal P01", { selector: ".eyebrow" })).toBeInTheDocument();
     const result = within(
-      screen.getByRole("article", { name: "Proposed statement" }),
+      screen.getByRole("article", { name: "Suggested statement" }),
     ).getByRole("status");
-    expect(result).toHaveTextContent("Human decision: Accepted at revision 1");
+    expect(result).toHaveTextContent("Your choice: Included.");
     expect(result).toHaveTextContent(
-      "Accepted statement: Cardiology documented findings consistent with POTS",
+      "Included statement: Cardiology documented findings consistent with POTS",
     );
   });
 
@@ -222,21 +223,21 @@ describe("Tranche 2 case navigator journey", () => {
     renderDemo();
     await selectProposal("P02");
 
-    fireEvent.click(screen.getByRole("button", { name: "Reject" }));
-    await waitFor(() => expect(proposalButton("P02")).toHaveTextContent("Rejected"));
+    fireEvent.click(screen.getByRole("button", { name: "Leave out" }));
+    await waitFor(() => expect(proposalButton("P02")).toHaveTextContent("Left out"));
     const result = within(
-      screen.getByRole("article", { name: "Proposed statement" }),
+      screen.getByRole("article", { name: "Suggested statement" }),
     ).getByRole("status");
-    expect(result).toHaveTextContent("Human decision: Rejected at revision 1");
-    expect(result).toHaveTextContent("No accepted statement entered case state.");
+    expect(result).toHaveTextContent("Your choice: Left out.");
+    expect(result).toHaveTextContent("This statement is not included in the drafts.");
 
-    expect(screen.getByRole("heading", { name: "No accepted timeline events yet" }))
+    expect(screen.getByRole("heading", { name: "No timeline entries yet" }))
       .toBeInTheDocument();
     await selectProposal("P02");
     fireEvent.click(
-      screen.getByRole("button", { name: "Inspect rejected provenance" }),
+      screen.getAllByRole("button", { name: "See source and review history" })[0],
     );
-    const provenance = screen.getByRole("region", { name: "Statement provenance" });
+    const provenance = screen.getByRole("region", { name: "Where this information came from" });
     expect(within(provenance).getByText("No accepted statement was created."))
       .toBeInTheDocument();
     expect(within(provenance).getByRole("heading", { name: "No output appearances" }))
@@ -249,25 +250,25 @@ describe("Tranche 2 case navigator journey", () => {
 
     expect(screen.getAllByRole("radio")).toHaveLength(1);
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
-    expect(screen.getByText(/No free-text editing is available/)).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Apply bounded edit" }));
-    await waitFor(() => expect(proposalButton("P03")).toHaveTextContent("Accepted"));
+    expect(screen.getByText(/Free-text editing is not available/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Use clarification" }));
+    await waitFor(() => expect(proposalButton("P03")).toHaveTextContent("Included"));
     expect(
-      within(screen.getByRole("article", { name: "Proposed statement" })).getByRole("status"),
+      within(screen.getByRole("article", { name: "Suggested statement" })).getByRole("status"),
     ).toHaveTextContent(
-      "Accepted statement: Maya reports that she can sometimes use a computer",
+      "Included statement: Maya reports that she can sometimes use a computer",
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Generate both previews" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview sample drafts" }));
     const ssa = await screen.findByRole("article", {
-      name: "SSA Disability Intake Packet — Synthetic Draft",
+      name: "Disability preparation draft",
     });
     expect(
       within(ssa).getByText(
         "Maya reports that she can sometimes use a computer for approximately 30 to 45 minutes before symptoms increase, but she cannot necessarily repeat that activity throughout a full day.",
       ),
     ).toBeInTheDocument();
-    expect(within(ssa).getByText("client reported")).toBeInTheDocument();
+    expect(within(ssa).getByText("Reported by the patient")).toBeInTheDocument();
     expect(within(ssa).queryByText(/60 minutes/)).not.toBeInTheDocument();
   });
 
@@ -275,18 +276,18 @@ describe("Tranche 2 case navigator journey", () => {
     renderDemo();
     await selectProposal("P06");
 
-    fireEvent.click(screen.getByRole("button", { name: "Hold" }));
-    await waitFor(() => expect(proposalButton("P06")).toHaveTextContent("Held"));
+    fireEvent.click(screen.getByRole("button", { name: "Decide later" }));
+    await waitFor(() => expect(proposalButton("P06")).toHaveTextContent("Set aside"));
     const result = within(
-      screen.getByRole("article", { name: "Proposed statement" }),
+      screen.getByRole("article", { name: "Suggested statement" }),
     ).getByRole("status");
-    expect(result).toHaveTextContent("Human decision: Held at revision 1");
-    expect(result).toHaveTextContent("No accepted statement entered case state.");
+    expect(result).toHaveTextContent("Your choice: Set aside.");
+    expect(result).toHaveTextContent("This statement is not included in the drafts.");
 
-    const acceptedMetric = screen.getByText("Accepted statements").closest("article");
+    const acceptedMetric = screen.getByText("Included statements").closest("article");
     expect(acceptedMetric).not.toBeNull();
     expect(within(acceptedMetric!).getByText("0")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "No accepted timeline events yet" }))
+    expect(screen.getByRole("heading", { name: "No timeline entries yet" }))
       .toBeInTheDocument();
   });
 
@@ -303,34 +304,34 @@ describe("Tranche 2 case navigator journey", () => {
 
   it("projects accepted POTS into both previews, excludes rejected testing, and traces every appearance", async () => {
     renderDemo();
-    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
-    await waitFor(() => expect(proposalButton("P01")).toHaveTextContent("Accepted"));
+    fireEvent.click(screen.getByRole("button", { name: "Include" }));
+    await waitFor(() => expect(proposalButton("P01")).toHaveTextContent("Included"));
     await selectProposal("P02");
-    fireEvent.click(screen.getByRole("button", { name: "Reject" }));
-    await waitFor(() => expect(proposalButton("P02")).toHaveTextContent("Rejected"));
+    fireEvent.click(screen.getByRole("button", { name: "Leave out" }));
+    await waitFor(() => expect(proposalButton("P02")).toHaveTextContent("Left out"));
 
-    fireEvent.click(screen.getByRole("button", { name: "Generate both previews" }));
+    fireEvent.click(screen.getByRole("button", { name: "Preview sample drafts" }));
     const ssa = await screen.findByRole("article", {
-      name: "SSA Disability Intake Packet — Synthetic Draft",
+      name: "Disability preparation draft",
     });
     const neurology = screen.getByRole("article", {
-      name: "Neurology Referral Background Packet — Synthetic Draft",
+      name: "Neurology background draft",
     });
     for (const packet of [ssa, neurology]) {
       expect(within(packet).getByText("Cardiology documented findings consistent with POTS."))
         .toBeInTheDocument();
       expect(within(packet).queryByText("Formal autonomic testing confirmed severe dysautonomia."))
         .not.toBeInTheDocument();
-      expect(within(packet).getByText(/not medical, legal, or other professional advice/i))
-        .toBeInTheDocument();
+      expect(within(packet).queryByText(/professional advice/i))
+        .not.toBeInTheDocument();
     }
 
-    fireEvent.click(screen.getByRole("button", { name: "Trace this statement" }));
-    const provenance = screen.getByRole("region", { name: "Statement provenance" });
+    fireEvent.click(within(screen.getByRole("region", { name: "Case timeline" })).getByRole("button", { name: "See source and review history" }));
+    const provenance = screen.getByRole("region", { name: "Where this information came from" });
     expect(within(provenance).getByText("S02", { selector: "h3" })).toBeInTheDocument();
     expect(within(provenance).getByText(/Orthostatic measurements/)).toBeInTheDocument();
     expect(within(provenance).getByText("P01", { selector: "h3" })).toBeInTheDocument();
-    expect(within(provenance).getByText("Accepted", { selector: "h3" })).toBeInTheDocument();
+    expect(within(provenance).getByText("Included", { selector: "h3" })).toBeInTheDocument();
     expect(within(provenance).getByText(/Timeline: Yes/)).toBeInTheDocument();
     expect(within(provenance).getByText("SSA packet: Appears")).toBeInTheDocument();
     expect(within(provenance).getByText("Neurology packet: Appears")).toBeInTheDocument();
@@ -338,14 +339,14 @@ describe("Tranche 2 case navigator journey", () => {
 
   it("confirms reset and restores the exact initial interface state", async () => {
     renderDemo();
-    fireEvent.click(screen.getByRole("button", { name: "Accept" }));
-    await waitFor(() => expect(proposalButton("P01")).toHaveTextContent("Accepted"));
-    fireEvent.click(screen.getByRole("button", { name: "Generate both previews" }));
+    fireEvent.click(screen.getByRole("button", { name: "Include" }));
+    await waitFor(() => expect(proposalButton("P01")).toHaveTextContent("Included"));
+    fireEvent.click(screen.getByRole("button", { name: "Preview sample drafts" }));
     await screen.findByRole("article", {
-      name: "SSA Disability Intake Packet — Synthetic Draft",
+      name: "Disability preparation draft",
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Reset synthetic demo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Restart the example" }));
     const dialog = screen.getByRole("alertdialog", {
       name: "Reset every review decision?",
     });
@@ -354,17 +355,17 @@ describe("Tranche 2 case navigator journey", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Confirm reset" }));
 
     await waitFor(() => expect(proposalButton("P01")).toHaveTextContent("Unreviewed"));
-    expect(screen.getByRole("heading", { name: "No accepted timeline events yet" }))
+    expect(screen.getByRole("heading", { name: "No timeline entries yet" }))
       .toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Accepted evidence is required" }))
+    expect(screen.getByRole("heading", { name: "Choose information for your draft" }))
       .toBeInTheDocument();
     const progressMetric = screen
-      .getByText("Proposal review", { selector: ".metric-card > span" })
+      .getByText("Suggestions reviewed", { selector: ".metric-card > span" })
       .closest("article");
     expect(progressMetric).not.toBeNull();
     expect(within(progressMetric!).getByText("0 / 8")).toBeInTheDocument();
-    const revisionMetric = screen.getByText("State revision").closest("article");
+    const revisionMetric = screen.getByText("Still to review").closest("article");
     expect(revisionMetric).not.toBeNull();
-    expect(within(revisionMetric!).getByText("0")).toBeInTheDocument();
+    expect(within(revisionMetric!).getByText("8")).toBeInTheDocument();
   });
 });

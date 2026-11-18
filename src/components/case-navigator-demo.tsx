@@ -20,10 +20,10 @@ import {
 } from "@/state/client-demo-context";
 
 const DECISION_LABELS: Record<ReviewDecision, string> = {
-  accept: "Accepted",
-  edit: "Accepted with bounded edit",
-  reject: "Rejected",
-  hold: "Held",
+  accept: "Included",
+  edit: "Included with clarification",
+  reject: "Left out",
+  hold: "Set aside",
 };
 
 const SCOPE_LABELS: Record<SourceScope, string> = {
@@ -35,7 +35,7 @@ const SCOPE_LABELS: Record<SourceScope, string> = {
 
 const SCOPE_LIMITS: Record<SourceScope, string> = {
   medical_record:
-    "This synthetic record does not establish facts beyond its quoted findings or replace professional review.",
+    "This record supports only the findings it documents.",
   referral_record:
     "A referral request does not establish that treatment occurred or produced a particular outcome.",
   client_statement:
@@ -44,8 +44,14 @@ const SCOPE_LIMITS: Record<SourceScope, string> = {
     "Employer-reported observations are not a medical diagnosis or benefits determination.",
 };
 
+function displayAuthority(value = ""): string {
+  const label = value.replace(/\bsynthetic\s+/gi, "");
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function humanize(value: string): string {
-  return value.replaceAll("_", " ");
+  const labels: Record<string, string> = { ssa_disability_intake: "Disability preparation", neurology_background: "Neurology background", client_reported: "Reported by the patient" };
+  return labels[value] ?? value.replaceAll("_", " ");
 }
 
 function reviewFor(
@@ -83,39 +89,38 @@ function OpeningHook({ overviewRef }: Readonly<{
           <span className="wordmark-label">Neverlost Case Navigator</span>
         </a>
         <div className="topbar-links">
-          <a href="#sources">Sources</a>
+          <a href="https://neverlostsystems.com/">About Neverlost</a>
+          <a href="#sources">Records</a>
           <a href="#proposal-review">Review</a>
-          <a href="#outputs">Packets</a>
+          <a href="#outputs">Drafts</a>
         </div>
       </nav>
       <div className="hero-grid" id="top">
         <div className="hero-copy">
-          <p className="eyebrow">A human-reviewed case foundation</p>
+          <p className="eyebrow">Working prototype</p>
           <h1 id="page-title">
-            Maya has one life, but her story is scattered across six records.
+            Prepare a clearer picture for your next conversation.
           </h1>
           <h2 className="sr-only">Neverlost Case Navigator</h2>
           <p className="hero-lede">
-            Neverlost turns fragmented records into one human-reviewed case
-            foundation. AI proposes. A human decides what becomes part of the
-            accepted case.
+            Case Navigator explores how to bring relevant information together and choose what goes into a preparation draft. Try Maya’s case: review suggestions, check their sources, and decide what to include.
           </p>
           <button
             className="button button-primary button-large"
             type="button"
             onClick={() => overviewRef.current?.focus()}
           >
-            Open Maya’s case
+            Explore Maya’s example
             <span aria-hidden="true">→</span>
           </button>
           <p className="boundary-note">
-            Synthetic demonstration only · No real client records · No eligibility decision
+            This demonstration uses fictional information. Nothing is sent to a provider.
           </p>
         </div>
-        <div className="record-stack" aria-label="Six preserved synthetic records">
+        <div className="record-stack" aria-label="Six records">
           <div className="record-stack-heading">
-            <span>Six fragments</span>
-            <strong>One review path</strong>
+            <span>Maya’s story spans six records</span>
+            <strong>You choose what to include</strong>
           </div>
           {sources.map((source) => (
             <div className="record-slip" key={source.id}>
@@ -125,7 +130,7 @@ function OpeningHook({ overviewRef }: Readonly<{
           ))}
           <div className="human-gate">
             <span aria-hidden="true">✓</span>
-            <p><strong>Human gate</strong>Nothing enters the accepted case without review.</p>
+            <p><strong>Review comes first</strong>Suggestions stay out of the draft until you include them.</p>
           </div>
         </div>
       </div>
@@ -140,7 +145,7 @@ function FeedbackBar() {
       {isBusy ? (
         <div className="feedback feedback-loading" role="status" aria-live="polite">
           <span className="loading-dot" aria-hidden="true" />
-          Updating the deterministic case…
+          Updating your example…
         </div>
       ) : (
         <p className="sr-only" role="status" aria-live="polite">
@@ -169,7 +174,7 @@ function CaseOverview({ overviewRef }: Readonly<{
     proposals,
     reviews,
   } = useCaseNavigator();
-  const rejected = reviews.filter((review) => review.decision === "reject").length;
+  const rejected = reviews.filter((review) => review.decision === "reject" || review.decision === "hold").length;
   const held = reviews.filter((review) => review.decision === "hold").length;
   const outputReady = acceptedStatements.length > 0;
 
@@ -183,50 +188,49 @@ function CaseOverview({ overviewRef }: Readonly<{
     >
       <div className="section-heading split-heading">
         <div>
-          <p className="eyebrow">Synthetic case · {caseSummary.id}</p>
+          <p className="eyebrow">Meet Maya</p>
           <h2 id="case-overview-title">Maya Bennett</h2>
-          <p>{caseSummary.primaryObjective}</p>
+          <p>Explore how Maya’s records and experiences can inform a preparation draft.</p>
         </div>
-        <StatusBadge tone="accepted">Synthetic only</StatusBadge>
       </div>
 
       <div className="metric-grid" aria-label="Case review status">
         <article className="metric-card metric-emphasis">
-          <span>Proposal review</span>
+          <span>Suggestions reviewed</span>
           <strong>{reviews.length} / {proposals.length}</strong>
           <progress value={reviews.length} max={proposals.length}>
             {reviews.length} of {proposals.length}
           </progress>
         </article>
         <article className="metric-card">
-          <span>Accepted statements</span>
+          <span>Included statements</span>
           <strong>{acceptedStatements.length}</strong>
-          <small>Human-approved case state</small>
+          <small>Chosen for this example’s drafts</small>
         </article>
         <article className="metric-card">
-          <span>Held · Rejected</span>
+          <span>Set aside · Left out</span>
           <strong>{held} · {rejected}</strong>
-          <small>Preserved outside accepted state</small>
+          <small>Not included in drafts</small>
         </article>
         <article className="metric-card">
-          <span>State revision</span>
-          <strong>{caseSummary.stateRevision}</strong>
-          <small>{humanize(caseSummary.lane)}</small>
+          <span>Still to review</span>
+          <strong>{proposals.length - reviews.length}</strong>
+          <small>You can preview a partial draft</small>
         </article>
       </div>
 
       <div className="overview-details">
         <div>
-          <span className="detail-label">Primary objective</span>
-          <p>{caseSummary.primaryObjective}</p>
+          <span className="detail-label">Disability preparation</span>
+          <p>Bring relevant history and day-to-day limitations into the conversation.</p>
         </div>
         <div>
-          <span className="detail-label">Secondary output</span>
-          <p>{caseSummary.secondaryOutput}</p>
+          <span className="detail-label">Neurology preparation</span>
+          <p>Review relevant background before an appointment.</p>
         </div>
         <div>
           <span className="detail-label">Preserved evidence</span>
-          <p>{caseSummary.sourceCount} synthetic sources · no seventh source</p>
+          <p>{caseSummary.sourceCount} records</p>
         </div>
         <div>
           <span className="detail-label">Output readiness</span>
@@ -234,8 +238,8 @@ function CaseOverview({ overviewRef }: Readonly<{
             {outputs.ssa_disability_intake && outputs.neurology_background
               ? "Both previews generated"
               : outputReady
-                ? "Accepted evidence is ready to preview"
-                : "Awaiting accepted evidence"}
+                ? "Included information is ready to preview"
+                : "Include a statement to try a draft"}
           </p>
         </div>
       </div>
@@ -276,15 +280,15 @@ function SourceLibrary({ onOpenProposal }: Readonly<{
     <section className="section" id="sources" aria-labelledby="sources-title">
       <div className="section-heading split-heading">
         <div>
-          <p className="eyebrow">Preserved evidence</p>
-          <h2 id="sources-title">Source library</h2>
-          <p>Exactly six synthetic records. Select one to inspect its boundaries.</p>
+          <p className="eyebrow">Check the original information</p>
+          <h2 id="sources-title">Original records</h2>
+          <p>Choose a record to read what it says and what it does not establish.</p>
         </div>
         <span className="count-mark" aria-label="Six sources">06</span>
       </div>
 
       <div className="source-workbench">
-        <div className="source-list" aria-label="Synthetic source records">
+        <div className="source-list" aria-label="Source records">
           {sources.map((source) => {
             const sourceProposals = proposals.filter((proposal) =>
               proposal.sourceIds.includes(source.id),
@@ -324,7 +328,7 @@ function SourceLibrary({ onOpenProposal }: Readonly<{
             <StatusBadge>{SCOPE_LABELS[selected.scope]}</StatusBadge>
           </header>
           <dl className="metadata-list">
-            <div><dt>Authority</dt><dd>{selected.authorityLabel}</dd></div>
+            <div><dt>Who provided it</dt><dd>{displayAuthority(selected.authorityLabel)}</dd></div>
             <div><dt>Review status</dt><dd>{related.some((item) => reviewFor(reviews, item.id)) ? "Review in progress" : "Unreviewed"}</dd></div>
             <div><dt>Related proposals</dt><dd>{related.length}</dd></div>
           </dl>
@@ -332,7 +336,7 @@ function SourceLibrary({ onOpenProposal }: Readonly<{
             <h4>Optional live analysis</h4>
             <p>
               Send only {selected.id} to the server. The server reloads this
-              synthetic fixture and returns unreviewed AI-generated proposals.
+              included record and returns unreviewed AI-generated proposals.
             </p>
             <button
               type="button"
@@ -344,7 +348,7 @@ function SourceLibrary({ onOpenProposal }: Readonly<{
             </button>
           </div>
           <div className="document-text">
-            <h4>Full synthetic source text</h4>
+            <h4>Full record text</h4>
             {selected.excerpts.map((excerpt) => <p key={excerpt}>{excerpt}</p>)}
           </div>
           <div className="evidence-boundaries">
@@ -380,17 +384,17 @@ function DemoPath({ onSelectProposal }: Readonly<{
 }>) {
   const { reviews } = useCaseNavigator();
   const steps = [
-    { id: "P01", label: "Accept supported POTS evidence", done: reviewFor(reviews, "P01")?.decision === "accept" },
-    { id: "P02", label: "Reject unsupported autonomic claim", done: reviewFor(reviews, "P02")?.decision === "reject" },
-    { id: "P03", label: "Apply bounded client-reported edit", done: reviewFor(reviews, "P03")?.decision === "edit" },
-    { id: "P06", label: "Hold unresolved evidence", done: reviews.some((review) => review.decision === "hold") },
+    { id: "P01", label: "Review a POTS statement", done: reviewFor(reviews, "P01")?.decision === "accept" },
+    { id: "P02", label: "Check an unsupported claim", done: reviewFor(reviews, "P02")?.decision === "reject" },
+    { id: "P03", label: "Try a clarification", done: reviewFor(reviews, "P03")?.decision === "edit" },
+    { id: "P06", label: "Set a question aside", done: reviews.some((review) => review.decision === "hold") },
   ];
 
   return (
     <aside className="demo-path" aria-labelledby="demo-path-title">
       <div className="demo-path-copy">
-        <p className="eyebrow">Judge-ready path</p>
-        <h3 id="demo-path-title">Four decisions show the human gate</h3>
+        <p className="eyebrow">Try four review decisions</p>
+        <h3 id="demo-path-title">See how your choices shape the draft</h3>
       </div>
       <ol>
         {steps.map((step) => (
@@ -461,9 +465,9 @@ function ProposalReview({
     <section className="section review-section" id="proposal-review" aria-labelledby="review-title" tabIndex={-1}>
       <div className="section-heading split-heading">
         <div>
-          <p className="eyebrow">AI proposes · A human decides</p>
-          <h2 id="review-title">Proposal review</h2>
-          <p>Original proposals remain preserved regardless of the human decision.</p>
+          <p className="eyebrow">Step 1 · Review suggestions</p>
+          <h2 id="review-title">Choose what to include</h2>
+          <p>Read each suggestion alongside its source. Including it controls the draft; it does not verify a medical claim.</p>
         </div>
         <StatusBadge tone={pending.length ? "pending" : "accepted"}>
           {pending.length} pending
@@ -498,7 +502,7 @@ function ProposalReview({
                 Proposal {proposal.id}
                 {proposal.generation ? " · AI-generated for human review" : ""}
               </p>
-              <h3 id="selected-proposal-title">Proposed statement</h3>
+              <h3 id="selected-proposal-title">Suggested statement</h3>
             </div>
             {review ? (
               <StatusBadge tone={review.decision === "reject" ? "rejected" : review.decision === "hold" ? "held" : "accepted"}>
@@ -516,16 +520,16 @@ function ProposalReview({
             </div>
             <dl>
               <div><dt>Source</dt><dd>{proposal.sourceIds.join(", ")} · {source?.title}</dd></div>
-              <div><dt>Authority</dt><dd>{proposal.authorityLabel}</dd></div>
+              <div><dt>Who provided it</dt><dd>{displayAuthority(proposal.authorityLabel)}</dd></div>
               <div><dt>Uncertainty</dt><dd>{humanize(proposal.uncertainty)}</dd></div>
-              <div><dt>Eligible outputs</dt><dd>{proposal.eligibleOutputs.map(humanize).join(" · ")}</dd></div>
+              <div><dt>May appear in</dt><dd>{proposal.eligibleOutputs.map(humanize).join(" · ")}</dd></div>
               <div><dt>Timeline</dt><dd>{proposal.timelineCandidate ? `Eligible · ${proposal.timelineCandidate.date}` : "Not timeline-eligible"}</dd></div>
             </dl>
           </div>
 
           {!review && proposal.boundedEdits.length ? (
             <fieldset className="edit-options">
-              <legend>Approved bounded edit</legend>
+              <legend>Provided clarification</legend>
               {proposal.boundedEdits.map((option) => (
                 <label key={option.id}>
                   <input
@@ -535,34 +539,35 @@ function ProposalReview({
                     checked={editOptionId === option.id}
                     onChange={() => setEditOptionId(option.id)}
                   />
-                  <span><strong>{option.label}</strong>{option.correctedStatement}</span>
+                  <span><strong>Use this clarification</strong>{option.correctedStatement}</span>
                 </label>
               ))}
-              <p>No free-text editing is available in this demonstration.</p>
+              <p>This example offers a fixed clarification. Free-text editing is not available.</p>
             </fieldset>
           ) : null}
 
+          {!review ? <p className="decision-help">Include adds this statement to the relevant drafts. Leave out and Decide later keep it out. To change a decision in this demo, restart the example below.</p> : null}
           {!review ? (
             <div className="decision-actions" aria-label={`Review actions for ${proposal.id}`}>
-              <button className="button button-accept" type="button" disabled={isBusy} onClick={() => decide("accept")}>Accept</button>
+              <button className="button button-accept" type="button" disabled={isBusy} onClick={() => decide("accept")}>Include</button>
               {proposal.boundedEdits.length ? (
-                <button className="button button-edit" type="button" disabled={isBusy || !editOptionId} onClick={() => decide("edit")}>Apply bounded edit</button>
+                <button className="button button-edit" type="button" disabled={isBusy || !editOptionId} onClick={() => decide("edit")}>Use clarification</button>
               ) : null}
-              <button className="button button-reject" type="button" disabled={isBusy} onClick={() => decide("reject")}>Reject</button>
-              <button className="button button-hold" type="button" disabled={isBusy} onClick={() => decide("hold")}>Hold</button>
+              <button className="button button-reject" type="button" disabled={isBusy} onClick={() => decide("reject")}>Leave out</button>
+              <button className="button button-hold" type="button" disabled={isBusy} onClick={() => decide("hold")}>Decide later</button>
             </div>
           ) : (
             <div className="decision-result" role="status">
               <div>
-                <p><strong>Human decision:</strong> {DECISION_LABELS[review.decision]} at revision {review.revision}.</p>
+                <p><strong>Your choice:</strong> {DECISION_LABELS[review.decision]}.</p>
                 {acceptedStatement ? (
-                  <p className="decision-accepted-text"><strong>Accepted statement:</strong> {acceptedStatement.text}</p>
+                  <p className="decision-accepted-text"><strong>Included statement:</strong> {acceptedStatement.text}</p>
                 ) : (
-                  <p className="decision-absent-text">No accepted statement entered case state.</p>
+                  <p className="decision-absent-text">This statement is not included in the drafts.</p>
                 )}
               </div>
               <button className="text-button" type="button" onClick={() => onTrace(review.acceptedStatementId ?? proposal.id)}>
-                Inspect {review.decision === "reject" ? "rejected" : "statement"} provenance
+                See source and review history
               </button>
             </div>
           )}
@@ -587,9 +592,9 @@ function TimelinePanel({ onTrace }: Readonly<{
   return (
     <section className="section" id="timeline" aria-labelledby="timeline-title">
       <div className="section-heading">
-        <p className="eyebrow">Accepted case only</p>
+        <p className="eyebrow">Information you included</p>
         <h2 id="timeline-title">Case timeline</h2>
-        <p>Rejected and held proposals never appear here.</p>
+        <p>Only included statements with dates appear here. Statements left out or set aside stay out.</p>
       </div>
       {ordered.length ? (
         <ol className="timeline-list">
@@ -605,10 +610,10 @@ function TimelinePanel({ onTrace }: Readonly<{
                   <p>{statement?.text}</p>
                   <div className="timeline-meta">
                     <span>{event.sourceIds.join(", ")} · {source?.title}</span>
-                    <span>{statement?.authorityLabel}</span>
+                    <span>{displayAuthority(statement?.authorityLabel)}</span>
                     <span>{statement ? humanize(statement.uncertainty) : ""}</span>
                   </div>
-                  <button type="button" className="text-button" onClick={() => onTrace(event.acceptedStatementId)}>Trace this statement</button>
+                  <button type="button" className="text-button" onClick={() => onTrace(event.acceptedStatementId)}>See source and review history</button>
                 </article>
               </li>
             );
@@ -617,8 +622,8 @@ function TimelinePanel({ onTrace }: Readonly<{
       ) : (
         <div className="empty-state">
           <span aria-hidden="true">○</span>
-          <h3>No accepted timeline events yet</h3>
-          <p>Accept a timeline-eligible proposal to build the human-reviewed chronology.</p>
+          <h3>No timeline entries yet</h3>
+          <p>Include a dated statement to see it in the timeline.</p>
         </div>
       )}
     </section>
@@ -629,12 +634,12 @@ function PacketPreview({ output, onTrace }: Readonly<{
   output: GeneratedOutput;
   onTrace(statementId: string): void;
 }>) {
+  const title = output.kind === "ssa_disability_intake" ? "Disability preparation draft" : "Neurology background draft";
   return (
-    <article className="packet-preview" aria-label={output.title}>
+    <article className="packet-preview" aria-label={title}>
       <header>
-        <p className="packet-kicker">Synthetic draft · Version {output.version.version}</p>
-        <h3>{output.title}</h3>
-        <p className="packet-notice">{output.nonprofessionalAdviceNotice}</p>
+        <p className="packet-kicker">Draft · Version {output.version.version}</p>
+        <h3>{title}</h3>
       </header>
       {output.sections.map((section) => (
         <section key={section.id} aria-labelledby={`${output.id}-${section.id}`}>
@@ -644,10 +649,10 @@ function PacketPreview({ output, onTrace }: Readonly<{
               <li key={statement.acceptedStatementId} data-statement-id={statement.acceptedStatementId}>
                 <p>{statement.text}</p>
                 <dl>
-                  <div><dt>Source / authority</dt><dd>{statement.authorityLabel} ({statement.sourceIds.join(", ")})</dd></div>
+                  <div><dt>Source / authority</dt><dd>{displayAuthority(statement.authorityLabel)} ({statement.sourceIds.join(", ")})</dd></div>
                   <div><dt>Label</dt><dd>{humanize(statement.uncertainty)}</dd></div>
                 </dl>
-                <button type="button" className="text-button" onClick={() => onTrace(statement.acceptedStatementId)}>Inspect provenance</button>
+                <button type="button" className="text-button" onClick={() => onTrace(statement.acceptedStatementId)}>See source and review history</button>
               </li>
             ))}
           </ul>
@@ -665,28 +670,32 @@ function OutputPreviews({ onTrace }: Readonly<{
     generateOutputs,
     isBusy,
     outputs,
+    proposals,
+    reviews,
   } = useCaseNavigator();
+  const remaining = proposals.length - reviews.length;
   const ready = acceptedStatements.length > 0;
 
   return (
     <section className="section output-section" id="outputs" aria-labelledby="outputs-title">
       <div className="section-heading split-heading">
         <div>
-          <p className="eyebrow">Deterministic projections</p>
-          <h2 id="outputs-title">Packet previews</h2>
-          <p>Only accepted case state is projected. These are not official forms or submissions.</p>
+          <p className="eyebrow">Step 2 · Preview the result</p>
+          <h2 id="outputs-title">Preparation drafts</h2>
+          <p>See how the information you included can support disability preparation and a neurology conversation.</p>
         </div>
         <div className="decision-actions">
           <button className="button button-primary" type="button" onClick={generateOutputs} disabled={!ready || isBusy}>
-            {outputs.ssa_disability_intake ? "Refresh both previews" : "Generate both previews"}
+            {outputs.ssa_disability_intake ? "Refresh sample drafts" : "Preview sample drafts"}
           </button>
         </div>
       </div>
+      <p className="draft-status">{remaining > 0 ? `${remaining} suggestions still need review. Any preview is a partial draft.` : "All suggestions have a decision. Review your drafts below."}</p>
       {!ready ? (
         <div className="empty-state empty-state-light">
           <span aria-hidden="true">▤</span>
-          <h3>Accepted evidence is required</h3>
-          <p>Accept or apply a bounded edit to at least one proposal before generating previews.</p>
+          <h3>Choose information for your draft</h3>
+          <p>Include at least one suggestion, with or without its provided clarification, to try a draft.</p>
         </div>
       ) : outputs.ssa_disability_intake && outputs.neurology_background ? (
         <div className="packet-grid">
@@ -696,8 +705,8 @@ function OutputPreviews({ onTrace }: Readonly<{
       ) : (
         <div className="empty-state empty-state-light">
           <span aria-hidden="true">✓</span>
-          <h3>Accepted evidence is ready</h3>
-          <p>Generate both previews to demonstrate output reuse and rejected-statement exclusion.</p>
+          <h3>Your sample drafts are ready to create</h3>
+          <p>Preview the information you chose. Statements left out or set aside will not be included.</p>
         </div>
       )}
     </section>
@@ -723,7 +732,7 @@ function ProvenancePanel({
   const traceable = [
     ...acceptedStatements.map((statement) => ({ id: statement.id, label: statement.text })),
     ...reviews
-      .filter((review) => review.decision === "reject")
+      .filter((review) => review.decision === "reject" || review.decision === "hold")
       .map((review) => ({
         id: review.proposalId,
         label: proposals.find((proposal) => proposal.id === review.proposalId)?.statement ?? review.proposalId,
@@ -738,12 +747,12 @@ function ProvenancePanel({
   void timeline;
 
   return (
-    <section className="section provenance-section" id="provenance" aria-labelledby="provenance-title">
+    <section className="section provenance-section" id="provenance" aria-labelledby="provenance-title" tabIndex={-1}>
       <div className="section-heading split-heading">
         <div>
           <p className="eyebrow">Evidence to decision to output</p>
-          <h2 id="provenance-title">Statement provenance</h2>
-          <p>Inspect exactly why a statement appears—or does not appear—in accepted case state.</p>
+          <h2 id="provenance-title">Where this information came from</h2>
+          <p>Follow a statement from its original record through your decision and into a draft, if included.</p>
         </div>
         {traceable.length ? (
           <label className="trace-select">
@@ -759,7 +768,7 @@ function ProvenancePanel({
         <div className="empty-state">
           <span aria-hidden="true">◎</span>
           <h3>No human decision to trace yet</h3>
-          <p>Accept or reject a proposal to open its provenance chain.</p>
+          <p>Make a review decision to see its source and history here.</p>
         </div>
       ) : (
         <div className="trace-flow">
@@ -768,7 +777,7 @@ function ProvenancePanel({
             <h3>{trace.supportingSourceIds.join(", ")}</h3>
             <p>{trace.supportingSourceIds.map((id) => sources.find((source) => source.id === id)?.title).filter(Boolean).join(" · ")}</p>
             <q>{trace.supportingExcerpts[0]}</q>
-            <small>{trace.authorityLabel}</small>
+            <small>{displayAuthority(trace.authorityLabel)}</small>
           </article>
           <span className="trace-connector" aria-hidden="true">→</span>
           <article className="trace-node trace-proposal">
@@ -829,15 +838,15 @@ function ResetPanel({ onResetSelections }: Readonly<{
     <section className="section reset-section" aria-labelledby="reset-title">
       <div>
         <p className="eyebrow">Repeatable demonstration</p>
-        <h2 id="reset-title">Return to the exact initial state</h2>
+        <h2 id="reset-title">Start again</h2>
         <p>Reset removes every decision, accepted statement, timeline event, and generated preview.</p>
       </div>
       {!confirming ? (
-        <button className="button button-secondary" type="button" onClick={() => setConfirming(true)}>Reset synthetic demo</button>
+        <button className="button button-secondary" type="button" onClick={() => setConfirming(true)}>Restart the example</button>
       ) : (
         <div className="reset-confirm" role="alertdialog" aria-labelledby="reset-confirm-title" aria-describedby="reset-confirm-description">
           <strong id="reset-confirm-title">Reset every review decision?</strong>
-          <p id="reset-confirm-description">This restores revision 0 and the eight unreviewed proposals.</p>
+          <p id="reset-confirm-description">This clears your choices and drafts and restores the eight original suggestions.</p>
           <div>
             <button className="button button-reject" type="button" disabled={isBusy} onClick={confirmReset}>Confirm reset</button>
             <button className="button button-secondary" type="button" onClick={() => setConfirming(false)}>Keep current review</button>
@@ -855,7 +864,12 @@ function NavigatorContent() {
 
   function openProposal(proposalId: string) {
     setSelectedProposalId(proposalId);
-    document.getElementById("proposal-review")?.focus({ preventScroll: true });
+    document.getElementById("proposal-review")?.focus();
+  }
+
+  function showTrace(id: string) {
+    setSelectedTraceId(id);
+    document.getElementById("provenance")?.focus();
   }
 
   function resetSelections() {
@@ -869,21 +883,28 @@ function NavigatorContent() {
       <FeedbackBar />
       <main>
         <CaseOverview overviewRef={overviewRef} />
-        <SourceLibrary onOpenProposal={openProposal} />
         <ProposalReview
           selectedProposalId={selectedProposalId}
           setSelectedProposalId={setSelectedProposalId}
-          onTrace={setSelectedTraceId}
+          onTrace={showTrace}
         />
-        <TimelinePanel onTrace={setSelectedTraceId} />
-        <OutputPreviews onTrace={setSelectedTraceId} />
+        <TimelinePanel onTrace={showTrace} />
+        <OutputPreviews onTrace={showTrace} />
+        <SourceLibrary onOpenProposal={openProposal} />
         <ProvenancePanel selectedTraceId={selectedTraceId} setSelectedTraceId={setSelectedTraceId} />
         <ResetPanel onResetSelections={resetSelections} />
       </main>
       <footer className="site-footer">
         <strong>Neverlost Case Navigator</strong>
-        <p>Synthetic demonstration only. Not medical, legal, benefits, or other professional advice.</p>
-        <p>No official SSA form, completed application, provider-authored record, legal submission, disability determination, or clinical recommendation is produced.</p>
+        <p>Demonstration with fictional information. Not medical, legal, or benefits advice.</p>
+        <p>This working prototype informs the software we are developing. Neverlost OS, our shared infrastructure, remains in development.</p>
+        <nav className="public-links" aria-label="Explore Neverlost">
+          <a href="https://neverlostsystems.com/">About Neverlost</a>
+          <a href="https://neverlost-full-human-pathway.vercel.app/">Full Human Pathway demo</a>
+          <a href="https://neverlost-v1-portfolio.vercel.app/v2">Neverlost V2 demo</a>
+          <a href="https://neverlostsystems.com/#early-access">Join the waitlist</a>
+        </nav>
+        <p>Waitlist registration does not guarantee pilot enrollment or immediate access.</p>
       </footer>
     </>
   );

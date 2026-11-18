@@ -4,9 +4,9 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Neverlost Case Navigator · Human-reviewed case foundation",
+  title: "Neverlost Case Navigator · Prepare for your next conversation",
   description:
-    "A clickable synthetic demonstration of evidence review, accepted case state, deterministic packet previews, and statement provenance.",
+    "Explore a fictional case, review suggestions and their sources, and choose what goes into preparation drafts.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

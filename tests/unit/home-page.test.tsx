@@ -9,7 +9,7 @@ describe("minimal Tranche 1 route", () => {
     expect(
       screen.getByRole("heading", { name: "Neverlost Case Navigator" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/NL-BFG-001/)).toBeInTheDocument();
-    expect(screen.getByText(/No real client records/)).toBeInTheDocument();
+
+    expect(screen.getByText(/This demonstration uses fictional information/)).toBeInTheDocument();
   });
 });
