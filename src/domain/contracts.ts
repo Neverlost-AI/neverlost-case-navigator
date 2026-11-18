@@ -14,7 +14,8 @@ export type ProposalOrigin =
   | "source_derived"
   | "client_reported"
   | "missing_evidence"
-  | "review_prompt";
+  | "review_prompt"
+  | "ai_generated";
 
 export type UncertaintyLabel =
   | "supported"
@@ -79,6 +80,49 @@ export interface Proposal {
   eligibleOutputs: readonly OutputKind[];
   timelineCandidate?: TimelineCandidate;
   boundedEdits: readonly BoundedEditOption[];
+  generation?: {
+    kind: "openai";
+    model: "gpt-5.6-terra";
+    label: "AI-generated proposal for human review";
+    runId: string;
+  };
+}
+
+export interface AiProposalCandidate {
+  statement: string;
+  sourceId: SourceRecord["id"];
+  supportingExcerpt: string;
+  uncertainty: UncertaintyLabel;
+  outputSections: readonly OutputSection[];
+  eligibleOutputs: readonly OutputKind[];
+  timelineCandidate?: TimelineCandidate;
+  generatedByModel: "gpt-5.6-terra";
+}
+
+export type ProposalGenerationProvider = "deterministic" | "openai";
+export type ProposalGenerationStatus = "completed" | "failed" | "superseded";
+
+export interface ProposalGenerationRun {
+  localRunId: string;
+  provider: ProposalGenerationProvider;
+  model: string;
+  providerResponseId: string | null;
+  schemaVersion: string;
+  instructionVersion: string;
+  sourceIds: readonly SourceRecord["id"][];
+  sourceSetFingerprint: string;
+  startedAt: string;
+  completedAt: string;
+  validationResult: "passed" | "failed";
+  candidateIds: readonly string[];
+  deterministicResultHash: string;
+  idempotencyKey: string;
+  status: ProposalGenerationStatus;
+}
+
+export interface ProposalGenerationResult {
+  run: ProposalGenerationRun;
+  proposals: readonly Proposal[];
 }
 
 export interface ReviewProposalInput {
@@ -147,6 +191,27 @@ export interface GeneratedOutput {
   html: string;
 }
 
+export interface AiPacketParagraph {
+  text: string;
+  acceptedStatementIds: readonly string[];
+}
+
+export interface AiPacketSection {
+  id: OutputSection;
+  title: string;
+  paragraphs: readonly AiPacketParagraph[];
+}
+
+export interface AiPacketDraft {
+  title: "OpenAI-assisted Disability Case Packet — Synthetic Draft";
+  syntheticDraft: true;
+  aiGenerated: true;
+  model: "gpt-5.6-terra";
+  nonprofessionalAdviceNotice: string;
+  sections: readonly AiPacketSection[];
+  unresolvedEvidence: readonly AiPacketParagraph[];
+}
+
 export interface ProvenanceTrace {
   acceptedStatement: AcceptedStatement | null;
   originalProposal: Proposal;
@@ -179,6 +244,7 @@ export interface DemoSnapshot {
   timeline: readonly TimelineEvent[];
   outputs: readonly GeneratedOutput[];
   activity: readonly ActivityEvent[];
+  proposalGenerationRuns: readonly ProposalGenerationRun[];
 }
 
 export interface CaseNavigatorService {
@@ -187,6 +253,9 @@ export interface CaseNavigatorService {
   getSource(sourceId: SourceRecord["id"]): SourceRecord;
   createProposals(): readonly Proposal[];
   listProposals(): readonly Proposal[];
+  enqueueProposalGenerationResult(result: ProposalGenerationResult): readonly Proposal[];
+  recordSupersededProposalGenerationRun(run: ProposalGenerationRun): void;
+  listProposalGenerationRuns(): readonly ProposalGenerationRun[];
   reviewProposal(proposalId: string, input: ReviewProposalInput): ReviewedProposal;
   getAcceptedStatements(): readonly AcceptedStatement[];
   getTimeline(): readonly TimelineEvent[];

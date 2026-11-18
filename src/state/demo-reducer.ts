@@ -4,6 +4,7 @@ import type {
   DemoSnapshot,
   GeneratedOutput,
   Proposal,
+  ProposalGenerationRun,
   ReviewDecision,
   ReviewedProposal,
   TimelineEvent,
@@ -26,6 +27,15 @@ export type DemoAction =
       type: "generate_output";
       output: GeneratedOutput;
     }
+  | {
+      type: "enqueue_proposal_generation_result";
+      proposals: readonly Proposal[];
+      run: ProposalGenerationRun;
+    }
+  | {
+      type: "record_proposal_generation_run";
+      run: ProposalGenerationRun;
+    }
   | { type: "reset_demo" };
 
 function deepFreeze<T>(value: T): T {
@@ -47,6 +57,7 @@ const IMMUTABLE_INITIAL_STATE = deepFreeze<DemoState>({
   timeline: [],
   outputs: [],
   activity: [],
+  proposalGenerationRuns: [],
 });
 
 export function createInitialDemoState(): DemoState {
@@ -77,6 +88,37 @@ export function demoReducer(state: DemoState, action: DemoAction): DemoState {
       outputs: [...state.outputs, action.output],
       activity: [...state.activity, activity],
     };
+  }
+
+  if (action.type === "record_proposal_generation_run") {
+    const exists = state.proposalGenerationRuns.some(
+      (run) => run.idempotencyKey === action.run.idempotencyKey,
+    );
+    return exists
+      ? state
+      : {
+          ...state,
+          proposalGenerationRuns: [...state.proposalGenerationRuns, action.run],
+        };
+  }
+
+  if (action.type === "enqueue_proposal_generation_result") {
+    const existingIds = new Set(state.proposals.map((proposal) => proposal.id));
+    const additions = action.proposals.filter(
+      (proposal) => !existingIds.has(proposal.id),
+    );
+    const runExists = state.proposalGenerationRuns.some(
+      (run) => run.idempotencyKey === action.run.idempotencyKey,
+    );
+    return additions.length || !runExists
+      ? {
+          ...state,
+          proposals: [...state.proposals, ...additions],
+          proposalGenerationRuns: runExists
+            ? state.proposalGenerationRuns
+            : [...state.proposalGenerationRuns, action.run],
+        }
+      : state;
   }
 
   const revision = state.caseSummary.stateRevision + 1;

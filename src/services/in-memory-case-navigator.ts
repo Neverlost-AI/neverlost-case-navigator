@@ -5,6 +5,8 @@ import type {
   GeneratedOutput,
   OutputKind,
   Proposal,
+  ProposalGenerationResult,
+  ProposalGenerationRun,
   ProvenanceTrace,
   ReviewProposalInput,
   ReviewedProposal,
@@ -49,6 +51,79 @@ export class InMemoryCaseNavigatorService implements CaseNavigatorService {
 
   listProposals(): readonly Proposal[] {
     return copy(this.state.proposals);
+  }
+
+  enqueueProposalGenerationResult(
+    result: ProposalGenerationResult,
+  ): readonly Proposal[] {
+    const existingRun = this.state.proposalGenerationRuns.find(
+      (run) => run.idempotencyKey === result.run.idempotencyKey,
+    );
+    if (existingRun) {
+      if (
+        existingRun.deterministicResultHash !==
+        result.run.deterministicResultHash
+      ) {
+        throw new Error("Idempotency key was reused for a different proposal result.");
+      }
+      return copy(
+        this.state.proposals.filter((proposal) =>
+          existingRun.candidateIds.includes(proposal.id),
+        ),
+      );
+    }
+    if (
+      result.run.status !== "completed" ||
+      result.run.validationResult !== "passed"
+    ) {
+      throw new Error("Only completed, validated generation runs may be enqueued.");
+    }
+    if (
+      result.run.candidateIds.length !== result.proposals.length ||
+      result.proposals.some(
+        (proposal, index) => proposal.id !== result.run.candidateIds[index],
+      )
+    ) {
+      throw new Error("Generation run candidate IDs do not match its proposals.");
+    }
+
+    for (const proposal of result.proposals) {
+      if (proposal.origin !== "ai_generated" || !proposal.generation) {
+        throw new Error("Only clearly labeled AI-generated proposals may be enqueued.");
+      }
+      const sourceId = proposal.sourceIds[0];
+      const source = this.state.sources.find((item) => item.id === sourceId);
+      if (!source) {
+        throw new Error(`Unknown source: ${String(sourceId)}`);
+      }
+      if (
+        proposal.sourceIds.length !== 1 ||
+        proposal.supportingExcerpts.length !== 1 ||
+        !source.excerpts.includes(proposal.supportingExcerpts[0])
+      ) {
+        throw new Error(
+          `AI proposal excerpt is not preserved in ${source.id}.`,
+        );
+      }
+    }
+
+    this.state = demoReducer(this.state, {
+      type: "enqueue_proposal_generation_result",
+      proposals: result.proposals,
+      run: result.run,
+    });
+    return copy(result.proposals);
+  }
+
+  recordSupersededProposalGenerationRun(run: ProposalGenerationRun): void {
+    this.state = demoReducer(this.state, {
+      type: "record_proposal_generation_run",
+      run: { ...run, status: "superseded" },
+    });
+  }
+
+  listProposalGenerationRuns(): readonly ProposalGenerationRun[] {
+    return copy(this.state.proposalGenerationRuns);
   }
 
   reviewProposal(

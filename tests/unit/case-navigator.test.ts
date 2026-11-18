@@ -1,11 +1,118 @@
 import { describe, expect, it, vi } from "vitest";
+import type { ProposalGenerationResult } from "@/domain/contracts";
 import { InMemoryCaseNavigatorService } from "@/services/in-memory-case-navigator";
+import { createInitialDemoState, demoReducer } from "@/state/demo-reducer";
 
 function newService() {
   return new InMemoryCaseNavigatorService();
 }
 
+function generatedResult(): ProposalGenerationResult {
+  const proposalId = "AI-S02-testhash-01";
+  return {
+    run: {
+      localRunId: "proposal-run-test",
+      provider: "openai",
+      model: "gpt-5.6-terra",
+      providerResponseId: "resp_test",
+      schemaVersion: "neverlost-proposal-v1",
+      instructionVersion: "source-extraction-v1",
+      sourceIds: ["S02"],
+      sourceSetFingerprint: "fnv1a32:source",
+      startedAt: "2026-08-20T00:00:00.000Z",
+      completedAt: "2026-08-20T00:00:01.000Z",
+      validationResult: "passed",
+      candidateIds: [proposalId],
+      deterministicResultHash: "fnv1a32:testhash",
+      idempotencyKey: "proposal-run-test:S02",
+      status: "completed",
+    },
+    proposals: [
+      {
+        id: proposalId,
+        statement: "Cardiology documented findings consistent with POTS.",
+        origin: "ai_generated",
+        sourceIds: ["S02"],
+        supportingExcerpts: [
+          "Orthostatic measurements and the clinical assessment document findings consistent with POTS.",
+        ],
+        uncertainty: "supported",
+        authorityLabel: "Synthetic cardiology record",
+        outputSections: ["medical"],
+        eligibleOutputs: ["ssa_disability_intake", "neurology_background"],
+        timelineCandidate: {
+          date: "2024-02-14",
+          label: "Cardiology evaluation documented findings consistent with POTS.",
+        },
+        boundedEdits: [],
+        generation: {
+          kind: "openai",
+          model: "gpt-5.6-terra",
+          label: "AI-generated proposal for human review",
+          runId: "proposal-run-test",
+        },
+      },
+    ],
+  };
+}
+
 describe("InMemoryCaseNavigatorService", () => {
+  it("enqueues AI proposals without changing accepted case state or revision", () => {
+    const service = newService();
+    const before = service.resetDemo();
+
+    const result = generatedResult();
+    const added = service.enqueueProposalGenerationResult(result);
+
+    expect(added).toEqual([
+      expect.objectContaining({
+        id: "AI-S02-testhash-01",
+        origin: "ai_generated",
+        generation: expect.objectContaining({ kind: "openai" }),
+      }),
+    ]);
+    expect(service.getCase()).toEqual(before.caseSummary);
+    expect(service.getAcceptedStatements()).toEqual([]);
+    expect(service.getTimeline()).toEqual([]);
+    expect(service.getOutput("ssa_disability_intake")).toBeNull();
+    expect(service.listProposalGenerationRuns()).toEqual([result.run]);
+
+    expect(service.enqueueProposalGenerationResult(result)).toEqual(added);
+    expect(service.listProposals().filter((proposal) => proposal.id === added[0].id)).toHaveLength(1);
+    expect(service.listProposalGenerationRuns()).toHaveLength(1);
+    const conflictingResult = structuredClone(result);
+    conflictingResult.run.deterministicResultHash = "fnv1a32:different";
+    expect(() =>
+      service.enqueueProposalGenerationResult(conflictingResult),
+    ).toThrow("Idempotency key was reused");
+
+    service.reviewProposal("AI-S02-testhash-01", { decision: "accept" });
+    expect(service.getCase().stateRevision).toBe(1);
+    expect(service.getAcceptedStatements()[0]).toMatchObject({
+      proposalId: "AI-S02-testhash-01",
+      origin: "ai_generated",
+    });
+  });
+
+  it("lets generation change only proposals and run metadata", () => {
+    const before = createInitialDemoState();
+    const result = generatedResult();
+    const after = demoReducer(before, {
+      type: "enqueue_proposal_generation_result",
+      proposals: result.proposals,
+      run: result.run,
+    });
+
+    expect(after.caseSummary).toEqual(before.caseSummary);
+    expect(after.reviews).toEqual(before.reviews);
+    expect(after.acceptedStatements).toEqual(before.acceptedStatements);
+    expect(after.timeline).toEqual(before.timeline);
+    expect(after.outputs).toEqual(before.outputs);
+    expect(after.activity).toEqual(before.activity);
+    expect(after.proposals).toHaveLength(before.proposals.length + 1);
+    expect(after.proposalGenerationRuns).toEqual([result.run]);
+  });
+
   it("starts with exactly the six locked synthetic sources", () => {
     const sources = newService().listSources();
 

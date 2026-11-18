@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img" aria-labelledby="title description">
+  <title id="title">Neverlost Case Navigator proposal-to-packet architecture</title>
+  <desc id="description">A canonical synthetic source is selected in the browser, reloaded by the server, analyzed through the OpenAI Responses API, validated locally, queued as unreviewed, and reviewed by a human before accepted state can feed the timeline, deterministic packet, and provenance.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#061a3a"/>
+      <stop offset="1" stop-color="#0b4f9b"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8fc5ff"/>
+    </marker>
+    <style>
+      .label { font: 700 22px Arial, sans-serif; fill: #ffffff; }
+      .detail { font: 400 17px Arial, sans-serif; fill: #d7eaff; }
+      .small { font: 700 15px Arial, sans-serif; fill: #9ccfff; letter-spacing: 1.5px; }
+      .box { fill: #ffffff; stroke: #9ccfff; stroke-width: 2; rx: 18; }
+      .boxText { font: 700 20px Arial, sans-serif; fill: #092652; }
+      .boxDetail { font: 400 15px Arial, sans-serif; fill: #36506f; }
+      .arrow { stroke: #8fc5ff; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .external { stroke-dasharray: 10 8; }
+    </style>
+  </defs>
+  <rect width="1600" height="720" fill="url(#background)"/>
+  <text x="60" y="62" class="small">AI PROPOSES. HUMAN DECIDES.</text>
+  <text x="60" y="105" class="label">Canonical synthetic evidence to traceable disability-focused packet</text>
+  <text x="60" y="138" class="detail">The OpenAI boundary ends at an unreviewed proposal. Human review is the only route into accepted case state.</text>
+
+  <g transform="translate(55 205)">
+    <rect class="box" width="220" height="125"/>
+    <text x="22" y="38" class="boxText">Browser</text>
+    <text x="22" y="68" class="boxDetail">Select source ID</text>
+    <text x="22" y="92" class="boxDetail">No source text trusted</text>
+  </g>
+  <path class="arrow" d="M275 267 H332"/>
+  <g transform="translate(335 205)">
+    <rect class="box" width="230" height="125"/>
+    <text x="22" y="38" class="boxText">Server route</text>
+    <text x="22" y="68" class="boxDetail">Reload canonical fixture</text>
+    <text x="22" y="92" class="boxDetail">Synthetic S01–S06 only</text>
+  </g>
+  <path class="arrow external" d="M565 267 H622"/>
+  <g transform="translate(625 205)">
+    <rect class="box" width="230" height="125"/>
+    <text x="22" y="38" class="boxText">OpenAI Responses</text>
+    <text x="22" y="68" class="boxDetail">Structured proposals</text>
+    <text x="22" y="92" class="boxDetail">store:false · no tools</text>
+  </g>
+  <path class="arrow external" d="M855 267 H912"/>
+  <g transform="translate(915 205)">
+    <rect class="box" width="230" height="125"/>
+    <text x="22" y="38" class="boxText">Local validation</text>
+    <text x="22" y="68" class="boxDetail">Schema + exact excerpts</text>
+    <text x="22" y="92" class="boxDetail">Authority boundaries</text>
+  </g>
+  <path class="arrow" d="M1145 267 H1202"/>
+  <g transform="translate(1205 205)">
+    <rect class="box" width="330" height="125"/>
+    <text x="22" y="38" class="boxText">Unreviewed proposal queue</text>
+    <text x="22" y="68" class="boxDetail">Run provenance + idempotency</text>
+    <text x="22" y="92" class="boxDetail">No accepted-state change</text>
+  </g>
+
+  <path class="arrow" d="M1370 330 V392"/>
+  <g transform="translate(1205 395)">
+    <rect class="box" width="330" height="125"/>
+    <text x="22" y="38" class="boxText">Human decision gate</text>
+    <text x="22" y="68" class="boxDetail">Accept · bounded edit</text>
+    <text x="22" y="92" class="boxDetail">Reject · hold</text>
+  </g>
+  <path class="arrow" d="M1205 457 H1110"/>
+  <g transform="translate(820 395)">
+    <rect class="box" width="285" height="125"/>
+    <text x="22" y="38" class="boxText">Accepted case state</text>
+    <text x="22" y="68" class="boxDetail">Changes only after</text>
+    <text x="22" y="92" class="boxDetail">Accept or bounded edit</text>
+  </g>
+  <path class="arrow" d="M820 457 H725"/>
+  <g transform="translate(350 380)">
+    <rect class="box" width="370" height="155"/>
+    <text x="22" y="38" class="boxText">Governed projections</text>
+    <text x="22" y="70" class="boxDetail">Accepted timeline</text>
+    <text x="22" y="96" class="boxDetail">Deterministic packet previews</text>
+    <text x="22" y="122" class="boxDetail">Statement provenance</text>
+  </g>
+  <path class="arrow" d="M1205 505 C1090 605 820 620 535 535"/>
+  <text x="785" y="625" class="detail">Rejected and held material remains traceable but does not enter accepted outputs</text>
+</svg>
