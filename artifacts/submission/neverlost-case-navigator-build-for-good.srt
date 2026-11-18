@@ -1,0 +1,111 @@
+1
+00:00:00,400 --> 00:00:11,114
+Disability and complex healthcare cases can scatter one person's story across providers, portals, tests, forms, and personal records.
+
+2
+00:00:11,114 --> 00:00:15,280
+The challenge is not merely storing documents.
+
+3
+00:00:15,280 --> 00:00:25,399
+It is preserving what the evidence says, what remains uncertain, and what a human has actually accepted.
+
+4
+00:00:25,799 --> 00:00:31,596
+Neverlost begins with a simple rule: preserve before you understand.
+
+5
+00:00:31,596 --> 00:00:36,814
+Case Navigator keeps each canonical source visible before interpretation.
+
+6
+00:00:36,814 --> 00:00:44,350
+Open AI can surface candidate information, but every result remains a proposal.
+
+7
+00:00:44,350 --> 00:00:50,728
+A human decides whether it becomes part of the accepted case.
+
+8
+00:00:50,728 --> 00:00:52,467
+AI proposes.
+
+9
+00:00:52,467 --> 00:00:53,626
+Human decides.
+
+10
+00:00:54,026 --> 00:00:58,516
+This demonstration follows Maya, a fully synthetic client.
+
+11
+00:00:58,516 --> 00:01:04,689
+We open her cardiology and orthostatic evaluation, source S zero two.
+
+12
+00:01:04,689 --> 00:01:14,230
+For repeatable judging, this recording replays the outputs from our validated live Open AI smoke test.
+
+13
+00:01:14,230 --> 00:01:24,332
+The server reconstructs the canonical fixture, and local validation requires exact preserved evidence before any candidate enters review.
+
+14
+00:01:24,732 --> 00:01:29,771
+Candidates arrive marked as AI generated and unreviewed.
+
+15
+00:01:29,771 --> 00:01:33,130
+One reflects findings consistent with POTS.
+
+16
+00:01:33,130 --> 00:01:35,930
+Another preserves missing autonomic testing.
+
+17
+00:01:35,930 --> 00:01:39,289
+Neither changes Maya's case on arrival.
+
+18
+00:01:39,289 --> 00:01:45,448
+The consultant checks evidence, then can accept, edit, reject, or hold.
+
+19
+00:01:45,448 --> 00:01:52,726
+Here, supported evidence is accepted, an unsupported claim rejected, and unresolved evidence held.
+
+20
+00:01:52,726 --> 00:01:57,765
+Only reviewed content enters accepted state and the timeline.
+
+21
+00:01:58,165 --> 00:02:06,086
+From reviewed state, Case Navigator generates a disability-focused packet through its deterministic output path.
+
+22
+00:02:06,086 --> 00:02:11,745
+It is not drafted directly from arbitrary AI text.
+
+23
+00:02:11,745 --> 00:02:19,666
+Supported information appears with source context; rejected or held material does not silently reappear.
+
+24
+00:02:19,666 --> 00:02:28,154
+Provenance traces an accepted statement through its source, proposal, human decision, timeline, and packet appearances.
+
+25
+00:02:28,554 --> 00:02:31,493
+Everything shown uses synthetic data.
+
+26
+00:02:31,493 --> 00:02:43,837
+It is not medical or legal advice, is not approved for production healthcare data, and makes no HIPAA or benefits determination.
+
+27
+00:02:43,837 --> 00:02:47,951
+Production security and compliance require separate architecture.
+
+28
+00:02:47,951 --> 00:02:57,356
+Neverlost helps people and systems work with complex information without losing context, provenance, or human responsibility.
